@@ -1,0 +1,38 @@
+﻿Execution Order
+
+When you run npx playwright test:
+
+Project dependencies kick in (defined in playwright.config.ts):
+
+• authSetupForUser1.ts runs first → logs in user1 → saves storage state in storageState/user1.json.
+• Then authSetupForUser2.ts runs → logs in user2 → saves storage state in storageState/user2.json.
+• Then authSetupForUser3.ts runs → logs in user3 → saves storage state in storageState/user3.json.
+
+Once all storage states are created → the example.spec.ts tests run:
+It loads each storage state (user1.json, user2.json, user3.json).
+
+For each user:
+
+• Opens the site logged in as that user (session restored from JSON).
+• Goes to “Edit Account” and checks that the email matches the expected value from .env.
+• Opens a new tab in the same browser context → verifies the session is shared across tabs.
+• Test reports are generated (default: HTML reporter).
+
+
+What’s Actually Happening:
+
+automated multi-user authentication setup using Playwright’s storageState.
+
+• Instead of logging in again and again, you log in once per user and save the session to JSON.
+• These sessions are then reused in later tests, so tests start in a pre-logged-in state.
+
+Benefits:
+
+• Saves time (no repeated login).
+• Ensures consistency (all tests use same saved session).
+• Validates session sharing across multiple tabs.
+
+Flow:
+
+• Auth setup scripts log in and save sessions.
+• Main test loads these sessions, verifies users are logged in, and checks session continuity across tabs.
